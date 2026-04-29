@@ -6,6 +6,7 @@ import categoryRoutes from './categoryRoutes';
 import bannerRoutes from './bannerRoutes';
 import couponRoutes from './couponRoutes';
 import testimonialRoutes from './testimonialRoutes';
+import userRoutes from './userRoutes';
 
 const router = Router();
 
@@ -19,5 +20,6 @@ router.use('/categories', categoryRoutes);
 router.use('/banners', bannerRoutes);
 router.use('/coupons', couponRoutes);
 router.use('/testimonials', testimonialRoutes);
+router.use('/users', userRoutes);
 
 export default router;

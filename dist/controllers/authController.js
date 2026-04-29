@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createTestAdmin = exports.loginAdmin = void 0;
+exports.loginCustomer = exports.registerCustomer = exports.createTestAdmin = exports.loginAdmin = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const User_1 = require("../models/User");
 const asyncHandler_1 = require("../utils/asyncHandler");
@@ -63,6 +63,69 @@ exports.createTestAdmin = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
     (0, responseHandler_1.successResponse)(res, 201, 'Test admin created successfully. You can now login.', {
         email: admin.email,
         password: 'password123'
+    });
+});
+exports.registerCustomer = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
+    const { name, email, password, phone, addresses } = req.body;
+    if (!name || !email || !password) {
+        return (0, responseHandler_1.errorResponse)(res, 400, 'Please provide name, email and password');
+    }
+    const userExists = await User_1.User.findOne({ email });
+    if (userExists) {
+        return (0, responseHandler_1.errorResponse)(res, 400, 'Email is already registered');
+    }
+    const user = await User_1.User.create({
+        name,
+        email,
+        password,
+        phone,
+        role: 'customer',
+        addresses
+    });
+    const token = generateToken(user._id.toString(), user.role);
+    res.cookie('jwt', token, {
+        httpOnly: true,
+        secure: env_1.ENV.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+    (0, responseHandler_1.successResponse)(res, 201, 'Registration successful', {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        token
+    });
+});
+exports.loginCustomer = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return (0, responseHandler_1.errorResponse)(res, 400, 'Please provide email and password');
+    }
+    const user = await User_1.User.findOne({ email }).select('+password');
+    if (!user || !(await user.matchPassword(password))) {
+        return (0, responseHandler_1.errorResponse)(res, 401, 'Invalid email or password');
+    }
+    if (!user.isActive) {
+        return (0, responseHandler_1.errorResponse)(res, 403, 'Your account has been deactivated');
+    }
+    // Only allow customers to use this endpoint
+    if (user.role !== 'customer') {
+        return (0, responseHandler_1.errorResponse)(res, 403, 'Please use the admin portal to login');
+    }
+    const token = generateToken(user._id.toString(), user.role);
+    res.cookie('jwt', token, {
+        httpOnly: true,
+        secure: env_1.ENV.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+    (0, responseHandler_1.successResponse)(res, 200, 'Login successful', {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        token
     });
 });
 //# sourceMappingURL=authController.js.map

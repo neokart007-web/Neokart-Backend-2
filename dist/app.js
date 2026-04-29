@@ -16,7 +16,7 @@ const app = (0, express_1.default)();
 // Security Middlewares
 app.use((0, helmet_1.default)());
 app.use((0, cors_1.default)({
-    origin: env_1.ENV.CORS_ORIGIN,
+    origin: true,
     credentials: true,
 }));
 // Parsers

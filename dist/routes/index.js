@@ -11,6 +11,7 @@ const categoryRoutes_1 = __importDefault(require("./categoryRoutes"));
 const bannerRoutes_1 = __importDefault(require("./bannerRoutes"));
 const couponRoutes_1 = __importDefault(require("./couponRoutes"));
 const testimonialRoutes_1 = __importDefault(require("./testimonialRoutes"));
+const userRoutes_1 = __importDefault(require("./userRoutes"));
 const router = (0, express_1.Router)();
 // Health Check
 router.get('/health', healthController_1.checkHealth);
@@ -21,5 +22,6 @@ router.use('/categories', categoryRoutes_1.default);
 router.use('/banners', bannerRoutes_1.default);
 router.use('/coupons', couponRoutes_1.default);
 router.use('/testimonials', testimonialRoutes_1.default);
+router.use('/users', userRoutes_1.default);
 exports.default = router;
 //# sourceMappingURL=index.js.map

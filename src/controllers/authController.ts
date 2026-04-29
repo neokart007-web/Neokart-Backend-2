@@ -75,7 +75,7 @@ export const createTestAdmin = asyncHandler(async (req: Request, res: Response) 
 });
 
 export const registerCustomer = asyncHandler(async (req: Request, res: Response) => {
-  const { name, email, password, phone, address } = req.body;
+  const { name, email, password, phone, addresses } = req.body;
 
   if (!name || !email || !password) {
     return errorResponse(res, 400, 'Please provide name, email and password');
@@ -92,7 +92,7 @@ export const registerCustomer = asyncHandler(async (req: Request, res: Response)
     password,
     phone,
     role: 'customer',
-    address
+    addresses
   });
 
   const token = generateToken(user._id.toString(), user.role);
