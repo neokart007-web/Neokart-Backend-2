@@ -15,10 +15,24 @@ const notFoundHandler_1 = require("./middlewares/notFoundHandler");
 const app = (0, express_1.default)();
 // Security Middlewares
 app.use((0, helmet_1.default)());
-app.use((0, cors_1.default)({
-    origin: true,
+const allowedOrigins = env_1.ENV.CORS_ORIGIN.split(',');
+const corsOptions = {
+    origin: (origin, callback) => {
+        console.log('CORS Check:', origin);
+        if (!origin)
+            return callback(null, true);
+        if (allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        else {
+            console.log('Warning: Origin not in allowed list, but allowing for dev:', origin);
+            return callback(null, true); // Temporarily allow all to prevent fetch errors
+        }
+    },
     credentials: true,
-}));
+};
+app.use((0, cors_1.default)(corsOptions));
+app.options('*', (0, cors_1.default)(corsOptions));
 // Parsers
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
@@ -29,6 +43,8 @@ if (env_1.ENV.NODE_ENV === 'development') {
 }
 // API Routes
 app.use('/api/v1', routes_1.default);
+const path_1 = __importDefault(require("path"));
+app.use('/uploads', express_1.default.static(path_1.default.join(__dirname, '../uploads')));
 // 404 Handler
 app.use(notFoundHandler_1.notFoundHandler);
 // Global Error Handler

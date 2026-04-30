@@ -8,6 +8,9 @@ export interface IUser extends Document {
   phone?: string;
   role: 'admin' | 'superadmin' | 'customer';
   isActive: boolean;
+  isVerified: boolean;
+  otp?: string;
+  otpExpires?: Date;
   addresses?: {
     _id?: string;
     street?: string;
@@ -26,6 +29,9 @@ const userSchema = new Schema<IUser>({
   phone: { type: String },
   role: { type: String, enum: ['admin', 'superadmin', 'customer'], default: 'customer' },
   isActive: { type: Boolean, default: true },
+  isVerified: { type: Boolean, default: false },
+  otp: { type: String },
+  otpExpires: { type: Date },
   addresses: [{
     street: { type: String },
     city: { type: String },

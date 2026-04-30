@@ -74,6 +74,8 @@ export const createTestAdmin = asyncHandler(async (req: Request, res: Response) 
   });
 });
 
+import { sendEmail } from '../utils/sendEmail';
+
 export const registerCustomer = asyncHandler(async (req: Request, res: Response) => {
   const { name, email, password, phone, addresses } = req.body;
 
@@ -81,19 +83,84 @@ export const registerCustomer = asyncHandler(async (req: Request, res: Response)
     return errorResponse(res, 400, 'Please provide name, email and password');
   }
 
-  const userExists = await User.findOne({ email });
-  if (userExists) {
-    return errorResponse(res, 400, 'Email is already registered');
+  let user = await User.findOne({ email });
+
+  if (user) {
+    if (user.isVerified) {
+      return errorResponse(res, 400, 'Email is already registered');
+    }
+    // If not verified, we can overwrite the existing unverified account or just generate a new OTP
+    user.name = name;
+    user.password = password;
+    user.phone = phone;
+    user.addresses = addresses;
   }
 
-  const user = await User.create({
-    name,
-    email,
-    password,
-    phone,
-    role: 'customer',
-    addresses
+  // Generate 6-digit OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+  if (!user) {
+    user = await User.create({
+      name,
+      email,
+      password,
+      phone,
+      role: 'customer',
+      addresses,
+      isVerified: false,
+      otp,
+      otpExpires
+    });
+  } else {
+    user.otp = otp;
+    user.otpExpires = otpExpires;
+    await user.save();
+  }
+
+  // Send OTP email
+  const message = `Your email verification code is: ${otp}\n\nIt expires in 10 minutes.`;
+  await sendEmail({
+    email: user.email,
+    subject: 'Heedy Luxury - Verify your email',
+    message
   });
+
+  successResponse(res, 201, 'OTP sent to your email. Please verify to complete registration.', {
+    email: user.email,
+  });
+});
+
+export const verifyOtp = asyncHandler(async (req: Request, res: Response) => {
+  const { email, otp } = req.body;
+
+  if (!email || !otp) {
+    return errorResponse(res, 400, 'Please provide email and OTP');
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return errorResponse(res, 404, 'User not found');
+  }
+
+  if (user.isVerified) {
+    return errorResponse(res, 400, 'User is already verified');
+  }
+
+  if (user.otp !== otp) {
+    return errorResponse(res, 400, 'Invalid OTP code');
+  }
+
+  if (user.otpExpires && user.otpExpires < new Date()) {
+    return errorResponse(res, 400, 'OTP code has expired');
+  }
+
+  // Verify user
+  user.isVerified = true;
+  user.otp = undefined;
+  user.otpExpires = undefined;
+  await user.save();
 
   const token = generateToken(user._id.toString(), user.role);
 
@@ -104,13 +171,49 @@ export const registerCustomer = asyncHandler(async (req: Request, res: Response)
     maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
   });
 
-  successResponse(res, 201, 'Registration successful', {
+  successResponse(res, 200, 'Email verified successfully', {
     _id: user._id,
     name: user.name,
     email: user.email,
     role: user.role,
     token
   });
+});
+
+export const resendOtp = asyncHandler(async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return errorResponse(res, 400, 'Please provide email');
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return errorResponse(res, 404, 'User not found');
+  }
+
+  if (user.isVerified) {
+    return errorResponse(res, 400, 'User is already verified');
+  }
+
+  // Generate 6-digit OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+  user.otp = otp;
+  user.otpExpires = otpExpires;
+  await user.save();
+
+  // Send OTP email
+  const message = `Your new email verification code is: ${otp}\n\nIt expires in 10 minutes.`;
+  await sendEmail({
+    email: user.email,
+    subject: 'Heedy Luxury - Verify your email',
+    message
+  });
+
+  successResponse(res, 200, 'A new OTP has been sent to your email', null);
 });
 
 export const loginCustomer = asyncHandler(async (req: Request, res: Response) => {
@@ -124,6 +227,10 @@ export const loginCustomer = asyncHandler(async (req: Request, res: Response) =>
 
   if (!user || !(await user.matchPassword(password))) {
     return errorResponse(res, 401, 'Invalid email or password');
+  }
+
+  if (!user.isVerified) {
+    return errorResponse(res, 403, 'Please verify your email to continue. We have sent an OTP to your email during registration.');
   }
 
   if (!user.isActive) {

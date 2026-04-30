@@ -13,25 +13,32 @@ const app: Application = express();
 
 // Security Middlewares
 app.use(helmet());
-const allowedOrigins = ENV.CORS_ORIGIN.split(',');
+// const allowedOrigins = ENV.CORS_ORIGIN.split(',');
 
-const corsOptions = {
-  origin: (origin: string | undefined, callback: any) => {
-    console.log('CORS Check:', origin);
-    if (!origin) return callback(null, true);
+// const corsOptions = {
+//   origin: (origin: string | undefined, callback: any) => {
+//     console.log('CORS Check:', origin);
+//     if (!origin) return callback(null, true);
 
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    } else {
-      console.log('Warning: Origin not in allowed list, but allowing for dev:', origin);
-      return callback(null, true); // Temporarily allow all to prevent fetch errors
-    }
-  },
-  credentials: true,
-};
+//     if (allowedOrigins.includes(origin)) {
+//       return callback(null, true);
+//     } else {
+//       console.log('Warning: Origin not in allowed list, but allowing for dev:', origin);
+//       return callback(null, true); // Temporarily allow all to prevent fetch errors
+//     }
+//   },
+//   credentials: true,
+// };
 
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+// app.use(cors(corsOptions));
+// app.options('*', cors(corsOptions));
+
+const corsConfig = {
+  origin: ENV.CORS_ORIGIN,
+  credential: true,
+  methods: ["GET", "POST", "PUT", "DELETE"]
+}
+app.use(cors(corsConfig));
 
 // Parsers
 app.use(express.json());
