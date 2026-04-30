@@ -4,6 +4,9 @@ import { asyncHandler } from '../utils/asyncHandler';
 import { successResponse, errorResponse } from '../utils/responseHandler';
 
 export const createBanner = asyncHandler(async (req: Request, res: Response) => {
+  if (req.file) {
+    req.body.image = req.file.path;
+  }
   const banner = await Banner.create(req.body);
   successResponse(res, 201, 'Banner created successfully', banner);
 });
@@ -17,6 +20,9 @@ export const updateBanner = asyncHandler(async (req: Request, res: Response) => 
   let banner = await Banner.findById(req.params.id);
   if (!banner) {
     return errorResponse(res, 404, 'Banner not found');
+  }
+  if (req.file) {
+    req.body.image = req.file.path;
   }
   banner = await Banner.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
   successResponse(res, 200, 'Banner updated successfully', banner);
