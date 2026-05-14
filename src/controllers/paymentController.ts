@@ -40,7 +40,11 @@ export const createOrder = async (req: Request, res: Response) => {
     // No DB save here — order saved only after payment verified
     res.status(200).json({
       success: true,
-      data: { razorpayOrder, isMock }
+      data: { 
+        razorpayOrder, 
+        isMock,
+        key_id: process.env.RAZORPAY_KEY_ID // Return the key used to generate the order to prevent mismatch
+      }
     });
 
   } catch (error: any) {
