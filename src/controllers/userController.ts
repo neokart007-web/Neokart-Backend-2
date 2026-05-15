@@ -11,15 +11,20 @@ export const getAddresses = asyncHandler(async (req: Request, res: Response) => 
 });
 
 export const updateProfile = asyncHandler(async (req: Request, res: Response) => {
-  const user = await User.findById(req.user?._id);
+  const { name, phone } = req.body;
+  
+  const updatedFields: any = {};
+  if (name) updatedFields.name = name;
+  if (phone !== undefined) updatedFields.phone = phone;
+
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    { $set: updatedFields },
+    { new: true, runValidators: true }
+  );
+
   if (!user) return errorResponse(res, 404, 'User not found');
 
-  const { name, phone } = req.body;
-  if (name) user.name = name;
-  if (phone !== undefined) user.phone = phone;
-
-  await user.save();
-  
   const updatedUser = {
     _id: user._id,
     name: user.name,

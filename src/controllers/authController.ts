@@ -50,6 +50,7 @@ export const loginAdmin = asyncHandler(async (req: Request, res: Response) => {
     _id: user._id,
     name: user.name,
     email: user.email,
+    phone: user.phone,
     role: user.role,
     token
   });
@@ -176,6 +177,7 @@ export const verifyOtp = asyncHandler(async (req: Request, res: Response) => {
     _id: user._id,
     name: user.name,
     email: user.email,
+    phone: user.phone,
     role: user.role,
     token
   });
@@ -256,6 +258,7 @@ export const loginCustomer = asyncHandler(async (req: Request, res: Response) =>
     _id: user._id,
     name: user.name,
     email: user.email,
+    phone: user.phone,
     role: user.role,
     token
   });
@@ -356,6 +359,7 @@ export const googleAuth = asyncHandler(async (req: Request, res: Response) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      phone: user.phone,
       role: user.role,
       token
     });
