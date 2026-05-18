@@ -3,6 +3,21 @@ import { User } from '../models/User';
 import { asyncHandler } from '../utils/asyncHandler';
 import { successResponse, errorResponse } from '../utils/responseHandler';
 
+export const getProfile = asyncHandler(async (req: Request, res: Response) => {
+  const user = await User.findById(req.user?._id).select('-password');
+  if (!user) return errorResponse(res, 404, 'User not found');
+  
+  const userData = {
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    role: user.role
+  };
+  
+  successResponse(res, 200, 'Profile fetched successfully', userData);
+});
+
 export const getAddresses = asyncHandler(async (req: Request, res: Response) => {
   const user = await User.findById(req.user?._id);
   if (!user) return errorResponse(res, 404, 'User not found');

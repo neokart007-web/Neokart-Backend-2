@@ -5,6 +5,7 @@ import Order from '../models/Order';
 import { Product } from '../models/Product';
 import { sendEmail } from '../utils/sendEmail';
 import dotenv from 'dotenv';
+import jwt from 'jsonwebtoken';
 dotenv.config();
 
 const razorpayInstance = new Razorpay({
@@ -110,6 +111,7 @@ export const verifyPayment = async (req: Request, res: Response) => {
 
         if (req.user && req.user.email) {
           console.log('Preparing to send order confirmation email to:', req.user.email);
+          const autoLoginToken = jwt.sign({ id: req.user._id, role: (req.user as any).role || 'customer' }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
 
           const itemsHtml = newOrder.items.map((item: any) => {
             const product = item.product;
@@ -176,7 +178,7 @@ export const verifyPayment = async (req: Request, res: Response) => {
                   We will send you another email once your order has been shipped. If you have any questions, feel free to reply to this email.
                 </p>
                 <div style="text-align: center;">
-                  <a href="${process.env.FRONTEND_URL || 'https://heedy-frontend.vercel.app'}/profile" style="background-color: #111827; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; font-size: 14px; display: inline-block;">View Order Details</a>
+                  <a href="${process.env.FRONTEND_URL || 'https://heedy-frontend.vercel.app'}/profile?token=${autoLoginToken}" style="background-color: #111827; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; font-size: 14px; display: inline-block;">View Order Details</a>
                 </div>
               </div>
               <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #eaeaea;">
@@ -261,6 +263,7 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
     try {
       const user = order.user as any;
       if (user && user.email) {
+        const autoLoginToken = jwt.sign({ id: user._id, role: user.role || 'customer' }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
         let statusColor = '#3b82f6'; // default blue
         let statusMessage = "There is an update regarding your recent order.";
         let subject = `Order Status Update - Heedy`;
@@ -352,7 +355,7 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
                   Thank you for shopping with Heedy. If you have any questions, feel free to reply to this email.
                 </p>
                 <div style="text-align: center;">
-                  <a href="${process.env.FRONTEND_URL || 'https://heedy-frontend.vercel.app'}/profile" style="background-color: #111827; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; font-size: 14px; display: inline-block;">View Order History</a>
+                  <a href="${process.env.FRONTEND_URL || 'https://heedy-frontend.vercel.app'}/profile?token=${autoLoginToken}" style="background-color: #111827; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; font-size: 14px; display: inline-block;">View Order History</a>
                 </div>
               </div>
               <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #eaeaea;">
