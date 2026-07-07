@@ -24,7 +24,7 @@ initSendGrid();
  */
 const sendEmail = async (options) => {
     // Use SENDGRID_FROM_EMAIL if set, otherwise fallback or error
-    const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'noreply@heedy.com';
+    const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'neokart007@gmail.com';
     const fromName = process.env.FROM_NAME || 'Heedy';
     // Validate email address
     if (!options.email || !options.email.includes('@')) {

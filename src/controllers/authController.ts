@@ -21,7 +21,7 @@ export const loginAdmin = asyncHandler(async (req: Request, res: Response) => {
 
   // Check if user exists and select password
   const user = await User.findOne({ email }).select('+password');
-
+  
   if (!user || !(await user.matchPassword(password))) {
     return errorResponse(res, 401, 'Invalid email or password');
   }
@@ -58,14 +58,14 @@ export const loginAdmin = asyncHandler(async (req: Request, res: Response) => {
 
 // Helper to quickly create a test admin user (Can be removed later)
 export const createTestAdmin = asyncHandler(async (req: Request, res: Response) => {
-  const userExists = await User.findOne({ email: 'admin@heedy.com' });
+  const userExists = await User.findOne({ email: 'neokart007@gmail.com' });
   if (userExists) {
     return errorResponse(res, 400, 'Admin already exists');
   }
 
   const admin = await User.create({
     name: 'System Admin',
-    email: 'admin@heedy.com',
+    email: 'neokart007@gmail.com',
     password: 'password123',
     role: 'superadmin'
   });

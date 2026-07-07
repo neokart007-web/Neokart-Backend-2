@@ -11,7 +11,7 @@ const mail_1 = __importDefault(require("@sendgrid/mail"));
 mail_1.default.setApiKey(process.env.SENDGRID_API_KEY || '');
 const sendEmail = async (options) => {
     try {
-        const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'noreply@heedy.com';
+        const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'neokart007@gmail.com';
         const fromName = process.env.FROM_NAME || 'Heedy';
         const msg = {
             to: options.email,

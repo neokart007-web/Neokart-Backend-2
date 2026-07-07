@@ -51,13 +51,13 @@ exports.loginAdmin = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
 });
 // Helper to quickly create a test admin user (Can be removed later)
 exports.createTestAdmin = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
-    const userExists = await User_1.User.findOne({ email: 'admin@heedy.com' });
+    const userExists = await User_1.User.findOne({ email: 'neokart007@gmail.com' });
     if (userExists) {
         return (0, responseHandler_1.errorResponse)(res, 400, 'Admin already exists');
     }
     const admin = await User_1.User.create({
         name: 'System Admin',
-        email: 'admin@heedy.com',
+        email: 'neokart007@gmail.com',
         password: 'password123',
         role: 'superadmin'
     });

@@ -15,7 +15,7 @@
 ### Step 1: Create SendGrid Account
 
 1. Go to: **https://signup.sendgrid.com/**
-2. Sign up with your email (muhammedminhaj798@gmail.com)
+2. Sign up with your email (neokart007@gmail.com)
 3. Verify your email
 4. Complete the onboarding
 
@@ -45,15 +45,15 @@ SendGrid requires sender verification (free, no domain needed):
 3. Fill in:
    ```
    From Name: Heedy
-   From Email: muhammedminhaj798@gmail.com
-   Reply To: muhammedminhaj798@gmail.com
+   From Email: neokart007@gmail.com
+   Reply To: neokart007@gmail.com
    Company: Heedy
    Address: Your address
    City: Your city
    Country: India
    ```
 4. Click **"Create"**
-5. **Check your email** (muhammedminhaj798@gmail.com)
+5. **Check your email** (neokart007@gmail.com)
 6. Click the verification link
 7. ✅ Done! You can now send from this email
 
@@ -74,10 +74,10 @@ Add these to your `.env`:
 ```env
 # SendGrid Configuration (Production)
 SENDGRID_API_KEY=SG.your_api_key_here
-SENDGRID_FROM_EMAIL=muhammedminhaj798@gmail.com
+SENDGRID_FROM_EMAIL=neokart007@gmail.com
 
 # Nodemailer Configuration (Local Development)
-SMTP_USER=muhammedminhaj798@gmail.com
+SMTP_USER=neokart007@gmail.com
 SMTP_PASS=bkjlocxukgqftnir
 FROM_NAME=Heedy
 ```
@@ -107,7 +107,7 @@ Add environment variables:
 3. Add:
    ```
    SENDGRID_API_KEY = SG.your_api_key_here
-   SENDGRID_FROM_EMAIL = muhammedminhaj798@gmail.com
+   SENDGRID_FROM_EMAIL = neokart007@gmail.com
    FROM_NAME = Heedy
    NODE_ENV = production
    ```

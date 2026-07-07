@@ -35,7 +35,7 @@
 ### Step 1: Get SendGrid API Key
 
 1. Go to: **https://signup.sendgrid.com/**
-2. Sign up with: `muhammedminhaj798@gmail.com`
+2. Sign up with: `neokart007@gmail.com`
 3. Verify your email
 4. Go to: **Settings** → **API Keys**
 5. Create API Key: `Heedy Production`
@@ -46,7 +46,7 @@
 
 1. Go to: **Settings** → **Sender Authentication**
 2. Click: **"Single Sender Verification"**
-3. Add: `muhammedminhaj798@gmail.com`
+3. Add: `neokart007@gmail.com`
 4. Fill in details (name, address, etc.)
 5. **Check your email** and click verification link
 6. ✅ Done!
@@ -58,10 +58,10 @@ Add to your `.env` file:
 ```env
 # SendGrid (Production)
 SENDGRID_API_KEY=SG.your_api_key_here
-SENDGRID_FROM_EMAIL=muhammedminhaj798@gmail.com
+SENDGRID_FROM_EMAIL=neokart007@gmail.com
 
 # Nodemailer (Local Development)
-SMTP_USER=muhammedminhaj798@gmail.com
+SMTP_USER=neokart007@gmail.com
 SMTP_PASS=bkjlocxukgqftnir
 FROM_NAME=Heedy
 ```
@@ -81,7 +81,7 @@ node test-nodemailer.js
 Add environment variables in Vercel:
 ```
 SENDGRID_API_KEY = SG.your_key_here
-SENDGRID_FROM_EMAIL = muhammedminhaj798@gmail.com
+SENDGRID_FROM_EMAIL = neokart007@gmail.com
 FROM_NAME = Heedy
 NODE_ENV = production
 ```
