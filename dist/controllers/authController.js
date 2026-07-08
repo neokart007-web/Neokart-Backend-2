@@ -115,25 +115,28 @@ exports.googleAuth = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
     if (!email || !googleId) {
         return (0, responseHandler_1.errorResponse)(res, 400, 'Invalid Google authentication data');
     }
+    // Normalize the email so casing/whitespace can't create duplicate customer accounts.
+    const normalizedEmail = email.trim().toLowerCase();
     try {
-        // Check if user already exists
-        let user = await User_1.User.findOne({ email });
+        // Check if this email already belongs to a customer/account (case-insensitive).
+        let user = await User_1.User.findOne({ email: normalizedEmail }).collation({ locale: 'en', strength: 2 });
+        const isNewUser = !user;
         if (user) {
-            // User exists — check if active
+            // Email already exists — reuse the existing account instead of creating a duplicate.
             if (!user.isActive) {
                 return (0, responseHandler_1.errorResponse)(res, 403, 'Your account has been deactivated');
             }
-            // Update Google ID if not set
+            // Link the Google ID if this account was created another way.
             if (!user.googleId) {
                 user.googleId = googleId;
                 await user.save();
             }
         }
         else {
-            // Create new user with Google info (no password needed)
+            // No existing customer with this email — create a new account.
             user = await User_1.User.create({
                 name: name || 'Google User',
-                email,
+                email: normalizedEmail,
                 googleId,
                 avatar: picture,
                 role: 'customer',
@@ -149,16 +152,21 @@ exports.googleAuth = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
             sameSite: 'strict',
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
-        (0, responseHandler_1.successResponse)(res, 200, 'Google sign-in successful', {
+        (0, responseHandler_1.successResponse)(res, 200, isNewUser ? 'Account created successfully' : 'This email is already registered. Signed you in.', {
             _id: user._id,
             name: user.name,
             email: user.email,
             phone: user.phone,
             role: user.role,
+            isNewUser,
             token
         });
     }
     catch (error) {
+        // Duplicate-key from the unique email index (race condition) — treat as existing account.
+        if (error?.code === 11000) {
+            return (0, responseHandler_1.errorResponse)(res, 409, 'This email is already registered. Please sign in.');
+        }
         console.error('Google auth error:', error);
         return (0, responseHandler_1.errorResponse)(res, 401, 'Google authentication failed');
     }
