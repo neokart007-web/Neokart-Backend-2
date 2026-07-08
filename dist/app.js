@@ -34,7 +34,9 @@ app.use((0, helmet_1.default)({
     },
 }));
 // CORS configuration
-const allowedOrigins = process.env.CORS_ORIGIN?.split(",") || [];
+const allowedOrigins = process.env.CORS_ORIGIN
+    ?.split(",")
+    .map(o => o.trim()) || [];
 const corsConfig = {
     origin: function (origin, callback) {
         // Allow requests with no origin (mobile apps, Postman, etc.)
@@ -52,9 +54,10 @@ const corsConfig = {
     optionsSuccessStatus: 200,
 };
 app.use((0, cors_1.default)(corsConfig));
+app.options("*", (0, cors_1.default)(corsConfig));
 // Body parsers with size limits
-app.use(express_1.default.json({ limit: '100kb' })); // Limit JSON body size
-app.use(express_1.default.urlencoded({ extended: true, limit: '100kb' })); // Limit URL-encoded body size
+app.use(express_1.default.json({ limit: '50mb' }));
+app.use(express_1.default.urlencoded({ extended: true, limit: '50mb' }));
 app.use((0, cookie_parser_1.default)());
 // Sanitization middleware - prevent NoSQL injection and XSS
 app.use(sanitize_1.sanitizeInput);

@@ -1,9 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.toggleCustomerStatus = exports.getAllCustomers = exports.editAddress = exports.deleteAddress = exports.addAddress = exports.updateProfile = exports.getAddresses = void 0;
+exports.toggleCustomerStatus = exports.getAllCustomers = exports.editAddress = exports.deleteAddress = exports.addAddress = exports.updateProfile = exports.getAddresses = exports.getProfile = void 0;
 const User_1 = require("../models/User");
 const asyncHandler_1 = require("../utils/asyncHandler");
 const responseHandler_1 = require("../utils/responseHandler");
+exports.getProfile = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
+    const user = await User_1.User.findById(req.user?._id).select('-password');
+    if (!user)
+        return (0, responseHandler_1.errorResponse)(res, 404, 'User not found');
+    const userData = {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role
+    };
+    (0, responseHandler_1.successResponse)(res, 200, 'Profile fetched successfully', userData);
+});
 exports.getAddresses = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
     const user = await User_1.User.findById(req.user?._id);
     if (!user)
@@ -11,15 +24,15 @@ exports.getAddresses = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
     (0, responseHandler_1.successResponse)(res, 200, 'Addresses fetched successfully', user.addresses || []);
 });
 exports.updateProfile = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
-    const user = await User_1.User.findById(req.user?._id);
+    const { name, phone } = req.body;
+    const updatedFields = {};
+    if (name)
+        updatedFields.name = name;
+    if (phone !== undefined)
+        updatedFields.phone = phone;
+    const user = await User_1.User.findByIdAndUpdate(req.user?._id, { $set: updatedFields }, { new: true, runValidators: true });
     if (!user)
         return (0, responseHandler_1.errorResponse)(res, 404, 'User not found');
-    const { name, phone } = req.body;
-    if (name)
-        user.name = name;
-    if (phone !== undefined)
-        user.phone = phone;
-    await user.save();
     const updatedUser = {
         _id: user._id,
         name: user.name,

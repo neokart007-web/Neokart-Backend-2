@@ -8,6 +8,7 @@ const userController_1 = require("../controllers/userController");
 const authMiddleware_1 = require("../middlewares/authMiddleware");
 const router = express_1.default.Router();
 router.route('/profile')
+    .get(authMiddleware_1.protect, userController_1.getProfile)
     .put(authMiddleware_1.protect, userController_1.updateProfile);
 router.route('/addresses')
     .get(authMiddleware_1.protect, userController_1.getAddresses)
