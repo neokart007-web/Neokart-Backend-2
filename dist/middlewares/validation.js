@@ -126,13 +126,6 @@ exports.schemas = {
             country: zod_1.z.string().max(100).optional(),
         }),
     }),
-    // Coupon schemas
-    validateCoupon: zod_1.z.object({
-        body: zod_1.z.object({
-            code: zod_1.z.string().min(1, 'Coupon code is required').max(50),
-            cartTotal: zod_1.z.number().positive('Cart total must be positive'),
-        }),
-    }),
     // ID parameter validation
     mongoId: zod_1.z.object({
         params: zod_1.z.object({

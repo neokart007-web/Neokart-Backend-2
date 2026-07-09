@@ -133,14 +133,6 @@ export const schemas = {
     }),
   }),
 
-  // Coupon schemas
-  validateCoupon: z.object({
-    body: z.object({
-      code: z.string().min(1, 'Coupon code is required').max(50),
-      cartTotal: z.number().positive('Cart total must be positive'),
-    }),
-  }),
-
   // ID parameter validation
   mongoId: z.object({
     params: z.object({

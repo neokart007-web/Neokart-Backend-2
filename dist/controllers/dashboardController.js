@@ -9,18 +9,16 @@ const Product_1 = require("../models/Product");
 const User_1 = require("../models/User");
 const Category_1 = require("../models/Category");
 const Banner_1 = require("../models/Banner");
-const Coupon_1 = require("../models/Coupon");
 const asyncHandler_1 = require("../utils/asyncHandler");
 const responseHandler_1 = require("../utils/responseHandler");
 exports.getDashboardStats = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
-    const [totalOrders, recentOrders, totalProducts, totalCustomers, totalCategories, totalBanners, totalCoupons, revenueResult,] = await Promise.all([
+    const [totalOrders, recentOrders, totalProducts, totalCustomers, totalCategories, totalBanners, revenueResult,] = await Promise.all([
         Order_1.default.countDocuments(),
         Order_1.default.find().populate('user', 'name email').sort({ createdAt: -1 }).limit(5),
         Product_1.Product.countDocuments(),
         User_1.User.countDocuments({ role: 'customer' }),
         Category_1.Category.countDocuments(),
         Banner_1.Banner.countDocuments(),
-        Coupon_1.Coupon.countDocuments(),
         Order_1.default.aggregate([
             { $match: { paymentStatus: 'completed' } },
             { $group: { _id: null, total: { $sum: '$total' } } }
@@ -33,7 +31,6 @@ exports.getDashboardStats = (0, asyncHandler_1.asyncHandler)(async (req, res) =>
         totalProducts,
         totalCategories,
         totalBanners,
-        totalCoupons,
         totalCustomers,
         recentOrders,
     });
