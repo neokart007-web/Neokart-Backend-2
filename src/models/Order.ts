@@ -20,6 +20,8 @@ export interface IOrder extends Document {
   shippingFee: number;
   total: number;
   paymentMethod: string;
+  advanceAmount: number;
+  balanceAmount: number;
   paymentStatus: 'pending' | 'completed' | 'failed' | 'refunded';
   orderStatus: 'processing' | 'shipped' | 'delivered' | 'cancelled';
   razorpayOrderId?: string;
@@ -52,6 +54,9 @@ const OrderSchema: Schema = new Schema(
     shippingFee: { type: Number, default: 0 },
     total: { type: Number, required: true },
     paymentMethod: { type: String, required: true },
+    // For COD orders: advanceAmount is paid online now, balanceAmount is collected on delivery.
+    advanceAmount: { type: Number, default: 0 },
+    balanceAmount: { type: Number, default: 0 },
     paymentStatus: {
       type: String,
       enum: ['pending', 'completed', 'failed', 'refunded'],

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateOrderStatus = exports.getAllOrders = exports.getMyOrders = exports.createCodOrder = exports.verifyPayment = exports.createOrder = void 0;
+exports.updateOrderStatus = exports.getAllOrders = exports.getMyOrders = exports.verifyPayment = exports.createOrder = void 0;
 const razorpay_1 = __importDefault(require("razorpay"));
 const crypto_1 = __importDefault(require("crypto"));
 const Order_1 = __importDefault(require("../models/Order"));
@@ -39,7 +39,8 @@ const sendOrderConfirmationEmail = async (user, order) => {
         }).join('');
         const isCod = order.paymentMethod === 'cod';
         const paymentLine = isCod
-            ? `<p style="margin: 10px 0 0 0; color: #374151; font-size: 15px;"><strong>Payment:</strong> <span style="color: #111827;">Cash on Delivery</span></p>`
+            ? `<p style="margin: 10px 0 0 0; color: #374151; font-size: 15px;"><strong>Payment:</strong> <span style="color: #111827;">Cash on Delivery</span></p>
+         <p style="margin: 6px 0 0 0; color: #374151; font-size: 14px;">Advance paid: <span style="color: #10b981; font-weight: bold;">₹${order.advanceAmount}</span> &nbsp;·&nbsp; Balance due on delivery: <span style="color: #111827; font-weight: bold;">₹${order.balanceAmount}</span></p>`
             : '';
         const htmlMessage = `
       <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eaeaea; border-radius: 10px; overflow: hidden; background-color: #ffffff;">
@@ -153,7 +154,9 @@ exports.createOrder = createOrder;
 // Verify Payment — Saves order to DB only after payment is confirmed
 const verifyPayment = async (req, res) => {
     try {
-        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, items, shippingAddress, subtotal, discount, shippingFee, total, } = req.body;
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, items, shippingAddress, subtotal, discount, shippingFee, total, paymentMethod, advanceAmount, balanceAmount, } = req.body;
+        // 'cod' means only the 10% advance was paid online; the balance is due on delivery.
+        const isCod = paymentMethod === 'cod';
         let paymentVerified = false;
         if (razorpay_payment_id === 'mock_payment') {
             paymentVerified = true;
@@ -176,8 +179,11 @@ const verifyPayment = async (req, res) => {
                 discount,
                 shippingFee,
                 total,
-                paymentMethod: 'razorpay',
-                paymentStatus: 'completed',
+                paymentMethod: isCod ? 'cod' : 'razorpay',
+                // COD advance is paid, but the full amount isn't settled until the balance is collected.
+                advanceAmount: isCod ? (advanceAmount || 0) : 0,
+                balanceAmount: isCod ? (balanceAmount || 0) : 0,
+                paymentStatus: isCod ? 'pending' : 'completed',
                 orderStatus: 'processing',
                 razorpayOrderId: razorpay_order_id,
                 razorpayPaymentId: razorpay_payment_id,
@@ -203,43 +209,6 @@ const verifyPayment = async (req, res) => {
     }
 };
 exports.verifyPayment = verifyPayment;
-// Create Cash-on-Delivery Order — saves order directly, no payment gateway involved
-const createCodOrder = async (req, res) => {
-    try {
-        const { items, shippingAddress, subtotal, discount, shippingFee, total, } = req.body;
-        if (!items || items.length === 0) {
-            return res.status(400).json({ success: false, message: 'No order items provided' });
-        }
-        if (!shippingAddress) {
-            return res.status(400).json({ success: false, message: 'Shipping address is required' });
-        }
-        const newOrder = new Order_1.default({
-            user: req.user?._id,
-            items,
-            shippingAddress,
-            subtotal,
-            discount,
-            shippingFee,
-            total,
-            paymentMethod: 'cod',
-            paymentStatus: 'pending', // Collected on delivery
-            orderStatus: 'processing',
-        });
-        await newOrder.save();
-        await newOrder.populate('items.product', 'name images variants');
-        await sendOrderConfirmationEmail(req.user, newOrder);
-        res.status(200).json({
-            success: true,
-            message: 'Order placed successfully. Pay on delivery.',
-            data: newOrder
-        });
-    }
-    catch (error) {
-        console.error('Error creating COD order:', error);
-        res.status(500).json({ success: false, message: error.message || 'Error placing order' });
-    }
-};
-exports.createCodOrder = createCodOrder;
 // Get My Orders
 const getMyOrders = async (req, res) => {
     try {

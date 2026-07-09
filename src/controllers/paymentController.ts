@@ -44,7 +44,8 @@ const sendOrderConfirmationEmail = async (user: any, order: any) => {
 
     const isCod = order.paymentMethod === 'cod';
     const paymentLine = isCod
-      ? `<p style="margin: 10px 0 0 0; color: #374151; font-size: 15px;"><strong>Payment:</strong> <span style="color: #111827;">Cash on Delivery</span></p>`
+      ? `<p style="margin: 10px 0 0 0; color: #374151; font-size: 15px;"><strong>Payment:</strong> <span style="color: #111827;">Cash on Delivery</span></p>
+         <p style="margin: 6px 0 0 0; color: #374151; font-size: 14px;">Advance paid: <span style="color: #10b981; font-weight: bold;">₹${order.advanceAmount}</span> &nbsp;·&nbsp; Balance due on delivery: <span style="color: #111827; font-weight: bold;">₹${order.balanceAmount}</span></p>`
       : '';
 
     const htmlMessage = `
@@ -172,7 +173,13 @@ export const verifyPayment = async (req: Request, res: Response) => {
       discount,
       shippingFee,
       total,
+      paymentMethod,
+      advanceAmount,
+      balanceAmount,
     } = req.body;
+
+    // 'cod' means only the 10% advance was paid online; the balance is due on delivery.
+    const isCod = paymentMethod === 'cod';
 
     let paymentVerified = false;
 
@@ -197,8 +204,11 @@ export const verifyPayment = async (req: Request, res: Response) => {
         discount,
         shippingFee,
         total,
-        paymentMethod: 'razorpay',
-        paymentStatus: 'completed',
+        paymentMethod: isCod ? 'cod' : 'razorpay',
+        // COD advance is paid, but the full amount isn't settled until the balance is collected.
+        advanceAmount: isCod ? (advanceAmount || 0) : 0,
+        balanceAmount: isCod ? (balanceAmount || 0) : 0,
+        paymentStatus: isCod ? 'pending' : 'completed',
         orderStatus: 'processing',
         razorpayOrderId: razorpay_order_id,
         razorpayPaymentId: razorpay_payment_id,
@@ -222,54 +232,6 @@ export const verifyPayment = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error('Error verifying payment:', error);
     res.status(500).json({ success: false, message: error.message || 'Error verifying payment' });
-  }
-};
-
-// Create Cash-on-Delivery Order — saves order directly, no payment gateway involved
-export const createCodOrder = async (req: Request, res: Response) => {
-  try {
-    const {
-      items,
-      shippingAddress,
-      subtotal,
-      discount,
-      shippingFee,
-      total,
-    } = req.body;
-
-    if (!items || items.length === 0) {
-      return res.status(400).json({ success: false, message: 'No order items provided' });
-    }
-    if (!shippingAddress) {
-      return res.status(400).json({ success: false, message: 'Shipping address is required' });
-    }
-
-    const newOrder = new Order({
-      user: req.user?._id,
-      items,
-      shippingAddress,
-      subtotal,
-      discount,
-      shippingFee,
-      total,
-      paymentMethod: 'cod',
-      paymentStatus: 'pending', // Collected on delivery
-      orderStatus: 'processing',
-    });
-
-    await newOrder.save();
-    await newOrder.populate('items.product', 'name images variants');
-
-    await sendOrderConfirmationEmail(req.user, newOrder);
-
-    res.status(200).json({
-      success: true,
-      message: 'Order placed successfully. Pay on delivery.',
-      data: newOrder
-    });
-  } catch (error: any) {
-    console.error('Error creating COD order:', error);
-    res.status(500).json({ success: false, message: error.message || 'Error placing order' });
   }
 };
 
