@@ -9,6 +9,7 @@ const authMiddleware_1 = require("../middlewares/authMiddleware");
 const router = express_1.default.Router();
 router.post('/create-order', authMiddleware_1.protect, paymentController_1.createOrder);
 router.post('/verify', authMiddleware_1.protect, paymentController_1.verifyPayment);
+router.post('/cod-order', authMiddleware_1.protect, paymentController_1.createCodOrder);
 router.get('/myorders', authMiddleware_1.protect, paymentController_1.getMyOrders);
 // Admin routes
 router.get('/admin/orders', authMiddleware_1.protect, (0, authMiddleware_1.authorize)('admin', 'superadmin'), paymentController_1.getAllOrders);
