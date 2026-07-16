@@ -1,0 +1,41 @@
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:21:55"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:21:55"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:21:55"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:21:55"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:21:55"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:21:55"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:21:55"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:22:00"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:22:00"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:22:00"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:22:00"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:22:00"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:22:00"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:22:00"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:23:00"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:23:00"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:23:00"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:23:00"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:23:00"}
+{"level":"info","message":"::1 - - [16/Jul/2026:06:53:22 +0000] \"GET / HTTP/1.1\" 404 63 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36\"","service":"heedy-backend","timestamp":"2026-07-16 12:23:22"}
+{"level":"info","message":"::1 - - [16/Jul/2026:06:53:23 +0000] \"GET /favicon.ico HTTP/1.1\" 404 74 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36\"","service":"heedy-backend","timestamp":"2026-07-16 12:23:23"}
+{"level":"info","message":"::1 - - [16/Jul/2026:06:53:29 +0000] \"GET /api/banners HTTP/1.1\" 404 74 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36\"","service":"heedy-backend","timestamp":"2026-07-16 12:23:29"}
+{"level":"info","message":"::1 - - [16/Jul/2026:06:53:34 +0000] \"GET /api/products HTTP/1.1\" 404 75 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36\"","service":"heedy-backend","timestamp":"2026-07-16 12:23:34"}
+{"level":"info","message":"::1 - - [16/Jul/2026:06:53:42 +0000] \"GET /products HTTP/1.1\" 404 71 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36\"","service":"heedy-backend","timestamp":"2026-07-16 12:23:42"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:23:47"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:23:47"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:23:47"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:23:47"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:23:47"}
+{"level":"info","message":"::1 - - [16/Jul/2026:06:54:06 +0000] \"GET /api/categories HTTP/1.1\" 404 77 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36\"","service":"heedy-backend","timestamp":"2026-07-16 12:24:06"}
+{"level":"info","message":"::1 - - [16/Jul/2026:06:54:13 +0000] \"GET /api/v1/banners HTTP/1.1\" 200 674 \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36\"","service":"heedy-backend","timestamp":"2026-07-16 12:24:13"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:24:27"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:24:27"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:24:27"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:24:27"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:24:27"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:26:17"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:26:17"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:26:17"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:26:17"}
+{"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:26:17"}
