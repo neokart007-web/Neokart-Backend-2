@@ -20,6 +20,8 @@ export interface IProduct extends Document {
   images: string[];
   status: string;
   showOnLandingPage: boolean;
+  showInFlashSale: boolean;
+  showAsNewArrival: boolean;
 }
 
 const variantSchema = new Schema<IVariant>({
@@ -43,6 +45,8 @@ const productSchema = new Schema<IProduct>(
     images: [{ type: String }],
     status: { type: String, default: 'In Stock' },
     showOnLandingPage: { type: Boolean, default: false },
+    showInFlashSale: { type: Boolean, default: false },
+    showAsNewArrival: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
