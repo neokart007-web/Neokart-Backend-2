@@ -54,6 +54,8 @@ const productSchema = new mongoose_1.Schema({
     images: [{ type: String }],
     status: { type: String, default: 'In Stock' },
     showOnLandingPage: { type: Boolean, default: false },
+    showInFlashSale: { type: Boolean, default: false },
+    showAsNewArrival: { type: Boolean, default: false },
 }, { timestamps: true });
 exports.Product = mongoose_1.default.model('Product', productSchema);
 //# sourceMappingURL=Product.js.map
