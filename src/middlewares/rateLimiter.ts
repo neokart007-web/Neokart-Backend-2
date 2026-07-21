@@ -1,12 +1,16 @@
 import rateLimit from 'express-rate-limit';
 
-// General API rate limiter
+// General API rate limiter.
+// The public storefront fires several product/category/banner reads per page
+// view, so a low ceiling silently blanks sections when the window is hit.
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
+  max: 500, // per real client IP (see app.set('trust proxy') in app.ts)
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
+  // Never rate-limit the keep-warm health ping.
+  skip: (req) => req.path === '/v1/health' || req.path === '/health',
 });
 
 // Strict rate limiter for authentication endpoints

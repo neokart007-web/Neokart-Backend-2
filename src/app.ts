@@ -14,6 +14,11 @@ import logger from './utils/logger';
 
 const app: Application = express();
 
+// Running behind Render's reverse proxy: trust the first proxy hop so
+// req.ip is the real client IP. Without this, express-rate-limit sees the
+// proxy's IP for every visitor and rate-limits the entire site as one bucket.
+app.set('trust proxy', 1);
+
 // Security Middlewares
 // Helmet - sets various HTTP headers for security
 app.use(helmet({

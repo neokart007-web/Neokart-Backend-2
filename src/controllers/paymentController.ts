@@ -119,41 +119,105 @@ const sendOrderConfirmationEmail = async (user: any, order: any) => {
   }
 };
 
-// Create Order — Only creates a Razorpay order, does NOT save to DB yet
+// Cash on Delivery collects a 10% advance online; the rest is due on delivery.
+const ADVANCE_RATE = 0.1;
+
+// True only when real Razorpay credentials are configured.
+const razorpayConfigured = (): boolean =>
+  !!process.env.RAZORPAY_KEY_ID &&
+  process.env.RAZORPAY_KEY_ID !== 'dummy_key_id' &&
+  !!process.env.RAZORPAY_KEY_SECRET &&
+  process.env.RAZORPAY_KEY_SECRET !== 'dummy_key_secret';
+
+// Recompute the authoritative order amounts from DB product prices.
+// The client is never trusted for prices or totals — it only tells us which
+// product/variant and quantity, and we price it ourselves.
+const computeOrderAmounts = async (items: any[]) => {
+  if (!Array.isArray(items) || items.length === 0) {
+    throw new Error('No items in order');
+  }
+
+  let subtotal = 0;
+  const normalizedItems: any[] = [];
+
+  for (const item of items) {
+    const product = await Product.findById(item.product);
+    if (!product) throw new Error('One or more products could not be found');
+
+    const variants = product.variants || [];
+    // Cart "size" is the variant volume; fall back to the first variant
+    // (items added from landing cards carry no size and used variants[0]).
+    const variant =
+      (item.size && variants.find((v: any) => v.volume === item.size)) || variants[0];
+    if (!variant) throw new Error(`No price found for product: ${product.name}`);
+
+    const quantity = Math.max(1, Math.floor(Number(item.quantity) || 1));
+    subtotal += variant.price * quantity;
+    normalizedItems.push({
+      product: product._id,
+      quantity,
+      price: variant.price,
+      size: item.size || variant.volume,
+    });
+  }
+
+  // No server-side discount or shipping rules exist yet, so both are fixed at 0.
+  const discount = 0;
+  const shippingFee = 0;
+  const total = Math.round((subtotal - discount + shippingFee) * 100) / 100;
+  const advanceAmount = Math.round(total * ADVANCE_RATE * 100) / 100;
+  const balanceAmount = Math.round((total - advanceAmount) * 100) / 100;
+
+  return { subtotal, discount, shippingFee, total, advanceAmount, balanceAmount, items: normalizedItems };
+};
+
+// Create Order — prices the order from the DB and creates a Razorpay order for
+// the amount to collect now. Does NOT save to our DB yet (that happens only
+// after the payment is verified).
 export const createOrder = async (req: Request, res: Response) => {
   try {
-    const { total } = req.body;
+    const { items, paymentMethod } = req.body;
+    const isCod = paymentMethod === 'cod';
+
+    const { total, advanceAmount } = await computeOrderAmounts(items);
+    const chargeAmount = isCod ? advanceAmount : total;
+    const amountPaise = Math.round(chargeAmount * 100);
 
     let razorpayOrder;
     let isMock = false;
 
-    // Razorpay requires minimum ₹1 (100 paise)
-    if (!process.env.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID === 'dummy_key_id' || total < 1) {
-      razorpayOrder = {
-        id: `mock_order_${Date.now()}`,
-        amount: Math.round(total * 100),
-        currency: 'INR'
-      };
+    if (!razorpayConfigured()) {
+      // Never silently mock in production — that would accept "orders" for no money.
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(503).json({
+          success: false,
+          message: 'Payment gateway is not configured. Please try again later.',
+        });
+      }
+      razorpayOrder = { id: `mock_order_${Date.now()}`, amount: amountPaise, currency: 'INR' };
       isMock = true;
+    } else if (amountPaise < 100) {
+      // Razorpay requires a minimum of ₹1 (100 paise).
+      return res.status(400).json({
+        success: false,
+        message: 'Order amount is below the minimum payable amount.',
+      });
     } else {
-      const options = {
-        amount: Math.round(total * 100),
-        currency: "INR",
-        receipt: `receipt_order_${Date.now()}`
-      };
-      razorpayOrder = await razorpayInstance.orders.create(options);
+      razorpayOrder = await razorpayInstance.orders.create({
+        amount: amountPaise,
+        currency: 'INR',
+        receipt: `receipt_order_${Date.now()}`,
+      });
     }
 
-    // No DB save here — order saved only after payment verified
     res.status(200).json({
       success: true,
       data: {
         razorpayOrder,
         isMock,
-        key_id: process.env.RAZORPAY_KEY_ID // Return the key used to generate the order to prevent mismatch
-      }
+        key_id: process.env.RAZORPAY_KEY_ID, // Return the key used so the client can't mismatch
+      },
     });
-
   } catch (error: any) {
     console.error('Error creating order:', error);
     res.status(500).json({ success: false, message: error.message || 'Error creating order' });
@@ -169,45 +233,58 @@ export const verifyPayment = async (req: Request, res: Response) => {
       razorpay_signature,
       items,
       shippingAddress,
-      subtotal,
-      discount,
-      shippingFee,
-      total,
       paymentMethod,
-      advanceAmount,
-      balanceAmount,
     } = req.body;
 
     // 'cod' means only the 10% advance was paid online; the balance is due on delivery.
     const isCod = paymentMethod === 'cod';
 
+    // Re-price the order from the DB — client-sent subtotal/total/prices are ignored.
+    const amounts = await computeOrderAmounts(items);
+    const expectedCharge = isCod ? amounts.advanceAmount : amounts.total;
+    const expectedPaise = Math.round(expectedCharge * 100);
+
     let paymentVerified = false;
 
-    if (razorpay_payment_id === 'mock_payment') {
+    if (!razorpayConfigured() && process.env.NODE_ENV !== 'production' && razorpay_payment_id === 'mock_payment') {
+      // Mock flow is allowed ONLY in non-production when no real keys are set.
       paymentVerified = true;
     } else {
+      // 1) Signature must be authentic (proves the payment belongs to this order).
       const sign = razorpay_order_id + "|" + razorpay_payment_id;
       const expectedSign = crypto
-        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || 'dummy_key_secret')
+        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || '')
         .update(sign.toString())
         .digest("hex");
-      paymentVerified = razorpay_signature === expectedSign;
+
+      if (razorpay_signature !== expectedSign) {
+        return res.status(400).json({ success: false, message: "Invalid signature. Payment verification failed." });
+      }
+
+      // 2) The amount Razorpay actually captured must match our server-computed charge.
+      const rzpOrder = await razorpayInstance.orders.fetch(razorpay_order_id);
+      const paidPaise = Number(rzpOrder.amount_paid) || 0;
+      if (rzpOrder.status !== 'paid' || paidPaise !== expectedPaise) {
+        return res.status(400).json({ success: false, message: "Payment amount mismatch. Order was not placed." });
+      }
+
+      paymentVerified = true;
     }
 
     if (paymentVerified) {
-      // Payment confirmed — 
+      // Payment confirmed — save the order using server-computed amounts only.
       const newOrder = new Order({
         user: req.user?._id,
-        items,
+        items: amounts.items,
         shippingAddress,
-        subtotal,
-        discount,
-        shippingFee,
-        total,
+        subtotal: amounts.subtotal,
+        discount: amounts.discount,
+        shippingFee: amounts.shippingFee,
+        total: amounts.total,
         paymentMethod: isCod ? 'cod' : 'razorpay',
         // COD advance is paid, but the full amount isn't settled until the balance is collected.
-        advanceAmount: isCod ? (advanceAmount || 0) : 0,
-        balanceAmount: isCod ? (balanceAmount || 0) : 0,
+        advanceAmount: isCod ? amounts.advanceAmount : 0,
+        balanceAmount: isCod ? amounts.balanceAmount : 0,
         paymentStatus: isCod ? 'pending' : 'completed',
         orderStatus: 'processing',
         razorpayOrderId: razorpay_order_id,
