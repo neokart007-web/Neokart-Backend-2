@@ -220,7 +220,8 @@ export const createOrder = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.error('Error creating order:', error);
-    res.status(500).json({ success: false, message: error.message || 'Error creating order' });
+    const message = error.error?.description || error.message || 'Error creating order';
+    res.status(500).json({ success: false, message });
   }
 };
 
@@ -308,7 +309,8 @@ export const verifyPayment = async (req: Request, res: Response) => {
     }
   } catch (error: any) {
     console.error('Error verifying payment:', error);
-    res.status(500).json({ success: false, message: error.message || 'Error verifying payment' });
+    const message = error.error?.description || error.message || 'Error verifying payment';
+    res.status(500).json({ success: false, message });
   }
 };
 
