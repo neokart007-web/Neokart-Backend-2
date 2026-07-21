@@ -123,9 +123,12 @@ export const schemas = {
 
   addAddress: z.object({
     body: z.object({
+      name: z.string().max(100).optional(),
+      phone: z.string().max(20).optional(),
       street: z.string().max(200).optional(),
       apartment: z.string().max(100).optional(),
       landmark: z.string().max(100).optional(),
+      postOffice: z.string().max(100).optional(),
       city: z.string().min(1, 'City is required').max(100),
       state: z.string().min(1, 'State is required').max(100),
       zipCode: z.string().max(20).optional(),

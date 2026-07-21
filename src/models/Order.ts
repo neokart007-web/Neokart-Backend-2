@@ -9,6 +9,8 @@ export interface IOrder extends Document {
     size?: string;
   }[];
   shippingAddress: {
+    name?: string;
+    phone?: string;
     street: string;
     city: string;
     state: string;
@@ -43,6 +45,8 @@ const OrderSchema: Schema = new Schema(
       },
     ],
     shippingAddress: {
+      name: { type: String },
+      phone: { type: String },
       street: { type: String, required: true },
       city: { type: String, required: true },
       state: { type: String, required: true },

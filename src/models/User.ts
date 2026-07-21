@@ -15,9 +15,12 @@ export interface IUser extends Document {
   avatar?: string;
   addresses?: {
     _id?: string;
+    name?: string;
+    phone?: string;
     street?: string;
     apartment?: string;
     landmark?: string;
+    postOffice?: string;
     city?: string;
     state?: string;
     zipCode?: string;
@@ -39,9 +42,12 @@ const userSchema = new Schema<IUser>({
   googleId: { type: String },
   avatar: { type: String },
   addresses: [{
+    name: { type: String },
+    phone: { type: String },
     street: { type: String },
     apartment: { type: String },
     landmark: { type: String },
+    postOffice: { type: String },
     city: { type: String },
     state: { type: String },
     zipCode: { type: String },

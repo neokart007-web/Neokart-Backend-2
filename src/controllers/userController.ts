@@ -59,13 +59,13 @@ export const addAddress = asyncHandler(async (req: Request, res: Response) => {
     user.addresses = [];
   }
   
-  const { street, apartment, landmark, city, state, zipCode, country } = req.body;
-  
+  const { name, phone, street, apartment, landmark, postOffice, city, state, zipCode, country } = req.body;
+
   if (!city || !state) {
     return errorResponse(res, 400, 'City and State are required');
   }
 
-  user.addresses.push({ street, apartment, landmark, city, state, zipCode, country });
+  user.addresses.push({ name, phone, street, apartment, landmark, postOffice, city, state, zipCode, country });
   await user.save();
   
   successResponse(res, 201, 'Address added successfully', user.addresses);
@@ -99,8 +99,8 @@ export const editAddress = asyncHandler(async (req: Request, res: Response) => {
     return errorResponse(res, 404, 'Address not found');
   }
 
-  const { street, apartment, landmark, city, state, zipCode, country } = req.body;
-  
+  const { name, phone, street, apartment, landmark, postOffice, city, state, zipCode, country } = req.body;
+
   if (!city || !state) {
     return errorResponse(res, 400, 'City and State are required');
   }
@@ -108,9 +108,12 @@ export const editAddress = asyncHandler(async (req: Request, res: Response) => {
   if (user.addresses) {
     user.addresses[addressIndex] = {
       ...user.addresses[addressIndex],
+      name,
+      phone,
       street,
       apartment,
       landmark,
+      postOffice,
       city,
       state,
       zipCode,
