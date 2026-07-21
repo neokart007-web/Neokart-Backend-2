@@ -117,9 +117,12 @@ exports.schemas = {
     }),
     addAddress: zod_1.z.object({
         body: zod_1.z.object({
+            name: zod_1.z.string().max(100).optional(),
+            phone: zod_1.z.string().max(20).optional(),
             street: zod_1.z.string().max(200).optional(),
             apartment: zod_1.z.string().max(100).optional(),
             landmark: zod_1.z.string().max(100).optional(),
+            postOffice: zod_1.z.string().max(100).optional(),
             city: zod_1.z.string().min(1, 'City is required').max(100),
             state: zod_1.z.string().min(1, 'State is required').max(100),
             zipCode: zod_1.z.string().max(20).optional(),

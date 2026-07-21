@@ -39,3 +39,4 @@
 {"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:26:17"}
 {"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:26:17"}
 {"level":"warn","message":"CORS blocked request from origin: http://localhost:3000","service":"heedy-backend","timestamp":"2026-07-16 12:26:17"}
+{"level":"info","message":"::1 - - [21/Jul/2026:11:30:11 +0000] \"POST /api/v1/payments/create-order HTTP/1.1\" 200 328 \"-\" \"axios/1.15.2\"","service":"heedy-backend","timestamp":"2026-07-21 17:00:11"}

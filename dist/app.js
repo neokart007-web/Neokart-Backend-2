@@ -16,6 +16,10 @@ const sanitize_1 = require("./middlewares/sanitize");
 const rateLimiter_1 = require("./middlewares/rateLimiter");
 const logger_1 = __importDefault(require("./utils/logger"));
 const app = (0, express_1.default)();
+// Running behind Render's reverse proxy: trust the first proxy hop so
+// req.ip is the real client IP. Without this, express-rate-limit sees the
+// proxy's IP for every visitor and rate-limits the entire site as one bucket.
+app.set('trust proxy', 1);
 // Security Middlewares
 // Helmet - sets various HTTP headers for security
 app.use((0, helmet_1.default)({

@@ -49,11 +49,11 @@ exports.addAddress = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
     if (!user.addresses) {
         user.addresses = [];
     }
-    const { street, apartment, landmark, city, state, zipCode, country } = req.body;
+    const { name, phone, street, apartment, landmark, postOffice, city, state, zipCode, country } = req.body;
     if (!city || !state) {
         return (0, responseHandler_1.errorResponse)(res, 400, 'City and State are required');
     }
-    user.addresses.push({ street, apartment, landmark, city, state, zipCode, country });
+    user.addresses.push({ name, phone, street, apartment, landmark, postOffice, city, state, zipCode, country });
     await user.save();
     (0, responseHandler_1.successResponse)(res, 201, 'Address added successfully', user.addresses);
 });
@@ -77,16 +77,19 @@ exports.editAddress = (0, asyncHandler_1.asyncHandler)(async (req, res) => {
     if (addressIndex === undefined || addressIndex === -1) {
         return (0, responseHandler_1.errorResponse)(res, 404, 'Address not found');
     }
-    const { street, apartment, landmark, city, state, zipCode, country } = req.body;
+    const { name, phone, street, apartment, landmark, postOffice, city, state, zipCode, country } = req.body;
     if (!city || !state) {
         return (0, responseHandler_1.errorResponse)(res, 400, 'City and State are required');
     }
     if (user.addresses) {
         user.addresses[addressIndex] = {
             ...user.addresses[addressIndex],
+            name,
+            phone,
             street,
             apartment,
             landmark,
+            postOffice,
             city,
             state,
             zipCode,

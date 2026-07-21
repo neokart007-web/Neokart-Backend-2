@@ -52,9 +52,12 @@ const userSchema = new mongoose_1.Schema({
     googleId: { type: String },
     avatar: { type: String },
     addresses: [{
+            name: { type: String },
+            phone: { type: String },
             street: { type: String },
             apartment: { type: String },
             landmark: { type: String },
+            postOffice: { type: String },
             city: { type: String },
             state: { type: String },
             zipCode: { type: String },

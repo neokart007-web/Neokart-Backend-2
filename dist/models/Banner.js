@@ -36,8 +36,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Banner = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
 const bannerSchema = new mongoose_1.Schema({
-    title: { type: String, required: true, trim: true },
-    description: { type: String, required: true },
+    title: { type: String, default: '', trim: true },
+    description: { type: String, default: '' },
     image: { type: String, required: true },
     mobileImage: { type: String },
     status: { type: String, default: 'ACTIVE' },
