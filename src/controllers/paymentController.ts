@@ -262,11 +262,33 @@ export const verifyPayment = async (req: Request, res: Response) => {
         return res.status(400).json({ success: false, message: "Invalid signature. Payment verification failed." });
       }
 
-      // 2) The amount Razorpay actually captured must match our server-computed charge.
-      const rzpOrder = await razorpayInstance.orders.fetch(razorpay_order_id);
-      const paidPaise = Number(rzpOrder.amount_paid) || 0;
-      if (rzpOrder.status !== 'paid' || paidPaise !== expectedPaise) {
-        return res.status(400).json({ success: false, message: "Payment amount mismatch. Order was not placed." });
+      // 2) Verify payment details directly with Razorpay API (handles both payment and order object status).
+      let isVerified = false;
+      try {
+        const rzpPayment = await razorpayInstance.payments.fetch(razorpay_payment_id);
+        const paymentAmount = Number(rzpPayment.amount) || 0;
+        const validStatus = ['captured', 'authorized'].includes(rzpPayment.status);
+        if (rzpPayment.order_id === razorpay_order_id && paymentAmount === expectedPaise && validStatus) {
+          isVerified = true;
+        }
+      } catch (err) {
+        console.warn('Could not fetch razorpay payment object, falling back to order fetch:', err);
+      }
+
+      if (!isVerified) {
+        try {
+          const rzpOrder = await razorpayInstance.orders.fetch(razorpay_order_id);
+          const paidPaise = Number(rzpOrder.amount_paid) || 0;
+          if (rzpOrder.status === 'paid' || paidPaise === expectedPaise) {
+            isVerified = true;
+          }
+        } catch (err) {
+          console.warn('Could not fetch razorpay order object:', err);
+        }
+      }
+
+      if (!isVerified) {
+        return res.status(400).json({ success: false, message: "Payment amount or status mismatch. Order was not placed." });
       }
 
       paymentVerified = true;
