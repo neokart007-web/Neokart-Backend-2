@@ -8,10 +8,28 @@ import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
 dotenv.config();
 
+// Trim to guard against a stray space/newline pasted into the env value,
+// which is a common cause of Razorpay "Authentication failed" errors.
+const RAZORPAY_KEY_ID = (process.env.RAZORPAY_KEY_ID || 'dummy_key_id').trim();
+const RAZORPAY_KEY_SECRET = (process.env.RAZORPAY_KEY_SECRET || 'dummy_key_secret').trim();
+
 const razorpayInstance = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || 'dummy_key_id',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || 'dummy_key_secret',
+  key_id: RAZORPAY_KEY_ID,
+  key_secret: RAZORPAY_KEY_SECRET,
 });
+
+// Turns any thrown value (Razorpay SDK error, Error, string) into a readable
+// reason so failures never surface as an opaque "Error creating order".
+const describeError = (error: any): string => {
+  if (error?.error?.description) return `Razorpay: ${error.error.description}`;
+  if (error?.message) return error.message;
+  if (error?.statusCode) return `Payment gateway error (status ${error.statusCode})`;
+  try {
+    const s = JSON.stringify(error);
+    if (s && s !== '{}') return s;
+  } catch { /* ignore */ }
+  return 'Unknown payment gateway error';
+};
 
 // Sends the order confirmation email. Shared by both the online (Razorpay) and COD flows.
 const sendOrderConfirmationEmail = async (user: any, order: any) => {
@@ -124,10 +142,7 @@ const ADVANCE_RATE = 0.1;
 
 // True only when real Razorpay credentials are configured.
 const razorpayConfigured = (): boolean =>
-  !!process.env.RAZORPAY_KEY_ID &&
-  process.env.RAZORPAY_KEY_ID !== 'dummy_key_id' &&
-  !!process.env.RAZORPAY_KEY_SECRET &&
-  process.env.RAZORPAY_KEY_SECRET !== 'dummy_key_secret';
+  RAZORPAY_KEY_ID !== 'dummy_key_id' && RAZORPAY_KEY_SECRET !== 'dummy_key_secret';
 
 // Recompute the authoritative order amounts from DB product prices.
 // The client is never trusted for prices or totals — it only tells us which
@@ -215,13 +230,17 @@ export const createOrder = async (req: Request, res: Response) => {
       data: {
         razorpayOrder,
         isMock,
-        key_id: process.env.RAZORPAY_KEY_ID, // Return the key used so the client can't mismatch
+        key_id: RAZORPAY_KEY_ID, // Return the key used so the client can't mismatch
       },
     });
   } catch (error: any) {
-    console.error('Error creating order:', error);
-    const message = error.error?.description || error.message || 'Error creating order';
-    res.status(500).json({ success: false, message });
+    // Log the full detail server-side (Render logs) so the real reason is visible.
+    console.error('Error creating order:', {
+      statusCode: error?.statusCode,
+      razorpay: error?.error,
+      message: error?.message,
+    });
+    res.status(500).json({ success: false, message: describeError(error) });
   }
 };
 
@@ -254,7 +273,7 @@ export const verifyPayment = async (req: Request, res: Response) => {
       // 1) Signature must be authentic (proves the payment belongs to this order).
       const sign = razorpay_order_id + "|" + razorpay_payment_id;
       const expectedSign = crypto
-        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || '')
+        .createHmac("sha256", RAZORPAY_KEY_SECRET)
         .update(sign.toString())
         .digest("hex");
 
@@ -330,9 +349,12 @@ export const verifyPayment = async (req: Request, res: Response) => {
       res.status(400).json({ success: false, message: "Invalid signature. Payment verification failed." });
     }
   } catch (error: any) {
-    console.error('Error verifying payment:', error);
-    const message = error.error?.description || error.message || 'Error verifying payment';
-    res.status(500).json({ success: false, message });
+    console.error('Error verifying payment:', {
+      statusCode: error?.statusCode,
+      razorpay: error?.error,
+      message: error?.message,
+    });
+    res.status(500).json({ success: false, message: describeError(error) });
   }
 };
 
